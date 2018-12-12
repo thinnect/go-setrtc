@@ -10,14 +10,14 @@ import "os"
 import "os/signal"
 
 import "github.com/proactivity-lab/go-loggers"
-import "github.com/proactivity-lab/go-sfconnection"
+import "github.com/proactivity-lab/go-moteconnection"
 
 import "github.com/thinnect/go-setrtc"
 
 import "github.com/jessevdk/go-flags"
 
 const ApplicationVersionMajor = 0
-const ApplicationVersionMinor = 1
+const ApplicationVersionMinor = 2
 const ApplicationVersionPatch = 0
 
 var ApplicationBuildDate string
@@ -25,7 +25,7 @@ var ApplicationBuildDistro string
 
 type Options struct {
 	Positional struct {
-		ConnectionString string `description:"Connectionstring sf@HOST:PORT"`
+		ConnectionString string `description:"Connectionstring sf@HOST:PORT or serial@PORT:BAUD"`
 	} `positional-args:"yes"`
 
 	NtpHost string `short:"n" long:"ntp-host" default:"0.pool.ntp.org" description:"NTP server address"`
@@ -63,7 +63,7 @@ func mainfunction() int {
 		return 0
 	}
 
-	host, port, err := sfconnection.ParseSfConnectionString(opts.Positional.ConnectionString)
+	conn, _, err := moteconnection.CreateConnection(opts.Positional.ConnectionString)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return 1
@@ -72,16 +72,15 @@ func mainfunction() int {
 	signals := make(chan os.Signal)
 	signal.Notify(signals, os.Interrupt, os.Kill)
 
-	sfc := sfconnection.NewSfConnection()
-	ss := setrtc.NewRealTimeClockSetter(sfc, opts.NtpHost)
+	ss := setrtc.NewRealTimeClockSetter(conn, opts.NtpHost)
 
 	logger := loggers.BasicLogSetup(len(opts.Debug))
 	if len(opts.Debug) > 0 {
-		sfc.SetLoggers(logger)
+		conn.SetLoggers(logger)
 	}
 	ss.SetLoggers(logger)
 
-	sfc.Autoconnect(host, port, 30*time.Second)
+	conn.Autoconnect(30 * time.Second)
 
 	time.Sleep(time.Second)
 
@@ -92,7 +91,7 @@ func mainfunction() int {
 		case sig := <-signals:
 			signal.Stop(signals)
 			logger.Debug.Printf("signal %s\n", sig)
-			sfc.Disconnect()
+			conn.Disconnect()
 			interrupted = true
 			ss.Exit <- true
 		}

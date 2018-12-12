@@ -9,7 +9,7 @@ import "bytes"
 import "encoding/binary"
 
 import "github.com/proactivity-lab/go-loggers"
-import "github.com/proactivity-lab/go-sfconnection"
+import "github.com/proactivity-lab/go-moteconnection"
 
 import "github.com/thinnect/go-devparam"
 
@@ -20,20 +20,20 @@ const STARTUP_DELAY = 3 * time.Second
 type RealTimeClockSetter struct {
 	loggers.DIWEloggers
 
-	sfc *sfconnection.SfConnection
-	dpm *deviceparameters.DeviceParameterManager
+	conn moteconnection.MoteConnection
+	dpm  *deviceparameters.DeviceParameterManager
 
 	host string
 
 	Exit chan bool
 }
 
-func NewRealTimeClockSetter(sfc *sfconnection.SfConnection, host string) *RealTimeClockSetter {
+func NewRealTimeClockSetter(conn moteconnection.MoteConnection, host string) *RealTimeClockSetter {
 	ss := new(RealTimeClockSetter)
 	ss.InitLoggers()
 
-	ss.sfc = sfc
-	ss.dpm = deviceparameters.NewDeviceParameterManager(sfc)
+	ss.conn = conn
+	ss.dpm = deviceparameters.NewDeviceParameterManager(conn)
 
 	ss.host = host
 
@@ -49,12 +49,17 @@ func (self *RealTimeClockSetter) AnnounceTime(offset int64) error {
 		return err
 	}
 
-	ntpr, err := ntp.Query(self.host, 4)
+	ntpr, err := ntp.Query(self.host)
 	if err != nil {
 		self.Warning.Printf("NTP query failed %s", err)
 		return err
 	}
 	self.Debug.Printf("NTP %d stratum %d RTT %s offset %s", ntpr.Time.Unix(), ntpr.Stratum, ntpr.RTT, ntpr.ClockOffset)
+
+	if err := ntpr.Validate(); err != nil {
+		self.Warning.Printf("NTP response validation failed %s", err)
+		return err
+	}
 
 	t := int64(ntpr.Time.Unix() + offset)
 	buf := new(bytes.Buffer)
@@ -83,7 +88,6 @@ func (self *RealTimeClockSetter) Run(period time.Duration, offset int64) {
 		case <-self.Exit:
 			self.Debug.Printf("Exit.\n")
 			self.dpm.Close()
-			self.sfc.Disconnect()
 		case <-time.After(period):
 			self.AnnounceTime(offset)
 		}
