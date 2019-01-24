@@ -78,6 +78,7 @@ pipeline {
 						exec curl -u ${NEXUS_UPLOAD_CREDS} --silent --fail --show-error --upload-file \$UPLOAD_FILENAME https://artifacts.thinnect.net/repository/ci/setrtc/build-${BUILD_NUMBER}/${BUILD_ARCH}/
 						"""
 				}
+			}
 		}
 	}
 }
