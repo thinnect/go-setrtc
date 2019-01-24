@@ -1,0 +1,30 @@
+[submodule "vendor/github.com/beevik/ntp"]
+	path = vendor/github.com/beevik/ntp
+	url = https://github.com/beevik/ntp
+[submodule "vendor/github.com/creack/goselect"]
+	path = vendor/github.com/creack/goselect
+	url = https://github.com/creack/goselect
+[submodule "vendor/github.com/jessevdk/go-flags"]
+	path = vendor/github.com/jessevdk/go-flags
+	url = https://github.com/jessevdk/go-flags
+[submodule "vendor/github.com/joaojeronimo/go-crc16"]
+	path = vendor/github.com/joaojeronimo/go-crc16
+	url = https://github.com/joaojeronimo/go-crc16
+[submodule "vendor/github.com/proactivity-lab/go-loggers"]
+	path = vendor/github.com/proactivity-lab/go-loggers
+	url = https://github.com/proactivity-lab/go-loggers
+[submodule "vendor/github.com/proactivity-lab/go-moteconnection"]
+	path = vendor/github.com/proactivity-lab/go-moteconnection
+	url = https://github.com/proactivity-lab/go-moteconnection
+[submodule "vendor/github.com/thinnect/go-devparam"]
+	path = vendor/github.com/thinnect/go-devparam
+	url = https://github.com/thinnect/go-devparam
+[submodule "vendor/go.bug.st/serial.v1"]
+	path = vendor/go.bug.st/serial.v1
+	url = https://go.bug.st/git/serial.v1.git
+[submodule "vendor/golang.org/x/net"]
+	path = vendor/golang.org/x/net
+	url = https://go.googlesource.com/net
+[submodule "vendor/golang.org/x/sys"]
+	path = vendor/golang.org/x/sys
+	url = https://go.googlesource.com/sys
