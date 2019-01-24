@@ -1,0 +1,15 @@
+[Unit]
+Description=mist-setrtc
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=timelord
+Restart=always
+RestartSec=30
+EnvironmentFile=/etc/mist-setrtc/mist-setrtc.conf
+# The difference between ${SETRTC_DAEMON_OPTIONS} and $SETRTC_DAEMON_OPTIONS is significant here!
+ExecStart=/usr/bin/mist-setrtc --conn=${SETRTC_DAEMON_CONN} $SETRTC_DAEMON_OPTIONS
+
+[Install]
+WantedBy=multi-user.target
