@@ -15,4 +15,6 @@ OPTIONS+=" --provides=mist-setrtc"
 OPTIONS+=" --pkglicense=MIT"
 OPTIONS+=" --maintainer=somebody@thinnect.com"
 
+OPTIONS+=" --exclude /usr/lib/python3"  # running lsb_release in a fresh container will make a pyc file there otherwise
+
 checkinstall $OPTIONS

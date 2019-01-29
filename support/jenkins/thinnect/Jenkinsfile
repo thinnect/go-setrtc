@@ -1,0 +1,84 @@
+pipeline {
+	// Make it parallel with: https://jenkins.io/blog/2017/09/25/declarative-1/
+	agent none
+	stages {
+		stage('Build mist-setrtc on amd64') {
+			agent {
+				docker {
+					// Request for an amd64 agent
+					image 'docker.thinnect.net/ci/stretch-build-golang-deb-amd64:20190115'
+					registryUrl 'https://docker.thinnect.net'
+					registryCredentialsId 'docker-pip_ci-agent'
+					alwaysPull true
+				}
+			}
+			environment {
+				GOPATH = "$WORKSPACE"
+				BUILD_TYPE = "debug"
+				BUILD_ARCH = "amd64"
+				NEXUS_UPLOAD_CREDS = credentials('nexus_ci-agent-uploader')
+			}
+			steps {
+				// stage('Echo GOPATH')
+				sh 'echo GOPATH:$GOPATH'
+				// stage('Build and install setrtc')
+				dir("src/github.com/thinnect/go-setrtc/cmd/setrtc") {
+					sh './build-deb.sh'
+					sh 'dpkg -i mist-setrtc*.deb'
+				}
+				// stage('Run setrtc')
+				sh 'mist-setrtc -V'
+
+				// Publish artifacts
+				dir('src/github.com/thinnect/go-setrtc/cmd/setrtc') {
+					sh \
+						"""#!/usr/bin/env bash
+						UPLOAD_FILENAME=(mist-setrtc*.deb)
+						echo "Publishing \$UPLOAD_FILENAME"
+						exec curl -u ${NEXUS_UPLOAD_CREDS} --silent --fail --show-error --upload-file \$UPLOAD_FILENAME https://artifacts.thinnect.net/repository/ci/setrtc/build-${BUILD_NUMBER}/${BUILD_ARCH}/
+						"""
+				}
+			}
+		}
+
+		stage('Build mist-setrtc on armhf') {
+			agent {
+				docker {
+					// Request for an ARM agent
+					label 'arm'
+					image 'docker.thinnect.net/ci/stretch-build-golang-deb-armhf:20190115'
+					registryUrl 'https://docker.thinnect.net'
+					registryCredentialsId 'docker-pip_ci-agent'
+					alwaysPull true
+				}
+			}
+			environment {
+				GOPATH = "$WORKSPACE"
+				BUILD_TYPE = "debug"
+				BUILD_ARCH = "armhf"
+				NEXUS_UPLOAD_CREDS = credentials('nexus_ci-agent-uploader')
+			}
+			steps {
+				// stage('Echo GOPATH')
+				sh 'echo GOPATH:$GOPATH'
+				// stage('Build and install setrtc')
+				dir("src/github.com/thinnect/go-setrtc/cmd/setrtc") {
+					sh './build-deb.sh'
+					sh 'dpkg -i mist-setrtc*.deb'
+				}
+				// stage('Run setrtc')
+				sh 'mist-setrtc -V'
+
+				// Publish artifacts
+				dir('src/github.com/thinnect/go-setrtc/cmd/setrtc') {
+					sh \
+						"""#!/usr/bin/env bash
+						UPLOAD_FILENAME=(mist-setrtc*.deb)
+						echo "Publishing \$UPLOAD_FILENAME"
+						exec curl -u ${NEXUS_UPLOAD_CREDS} --silent --fail --show-error --upload-file \$UPLOAD_FILENAME https://artifacts.thinnect.net/repository/ci/setrtc/build-${BUILD_NUMBER}/${BUILD_ARCH}/
+						"""
+				}
+			}
+		}
+	}
+}
