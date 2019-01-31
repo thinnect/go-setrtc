@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-User=timelord
+User=misttimelord
 Restart=always
 RestartSec=30
 EnvironmentFile=/etc/mist-setrtc/mist-setrtc.conf
