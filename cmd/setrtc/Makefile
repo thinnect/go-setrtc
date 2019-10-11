@@ -19,8 +19,8 @@ mist-setrtc:
 	go build -o mist-setrtc -ldflags "-X 'main.ApplicationBuildDate=$(BUILD_DATE)' -X 'main.ApplicationBuildDistro=$(BUILD_DISTRO)'"
 
 install: mist-setrtc
-	install -m0755  mist-setrtc /usr/bin
-	install systemd/mist-setrtc.service /etc/systemd/system/mist-setrtc.service
+	install -m0755 mist-setrtc /usr/bin
+	install -m0644 systemd/mist-setrtc.service /etc/systemd/system/mist-setrtc.service
 	install -d -m0755 /etc/mist-setrtc
 	install -m0664  systemd/mist-setrtc.conf /etc/mist-setrtc/mist-setrtc.conf
 
